@@ -3,6 +3,7 @@ import { ArrowUpRight, Menu, Moon, Sun, X } from "lucide-react"
 import { Dialog } from "radix-ui"
 import { Logo } from "@/components/logo"
 import { site } from "@/content/site"
+import { centerOf, toggleTheme } from "@/lib/theme"
 import { cn } from "@/lib/utils"
 
 const brand =
@@ -44,19 +45,10 @@ export function SiteHeader() {
 }
 
 function ThemeToggle() {
-  function toggle() {
-    const dark = document.documentElement.classList.toggle("dark")
-    try {
-      localStorage.setItem("theme", dark ? "dark" : "light")
-    } catch {
-      // Storage can be blocked; the toggle still works for this visit.
-    }
-  }
-
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={(event) => toggleTheme(centerOf(event.currentTarget))}
       aria-label="Toggle light and dark theme"
       className={cn(iconButton, "sm:ml-1")}
     >

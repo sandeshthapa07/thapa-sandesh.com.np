@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { ArrowRight, ArrowUpRight, MapPin } from "lucide-react"
+import { HangingLamp } from "@/components/hanging-lamp"
 import { PostList } from "@/components/post-list"
 import { Band, SectionTitle } from "@/components/section"
 import { projects } from "@/content/projects"
@@ -94,7 +95,7 @@ function Hero() {
   const links = site.socials.filter((social) => social.label !== "Email")
 
   return (
-    <section className="mx-auto grid max-w-[880px] grid-cols-1 gap-10 px-6 pt-8 pb-16 sm:px-8 sm:pt-16 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-16">
+    <section className="mx-auto grid max-w-[960px] grid-cols-1 gap-10 px-6 pt-8 pb-16 sm:px-8 sm:pt-16 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-16">
       <div>
         <h1 className="text-4xl leading-[1.1] font-semibold tracking-tight sm:text-5xl">
           Hi, I&apos;m Sandesh.
@@ -154,14 +155,17 @@ function Hero() {
           )}
         </p>
       </div>
-      <Polaroid />
+      <div className="order-first flex items-start gap-5 sm:gap-8 lg:order-none lg:items-center lg:gap-6 lg:self-stretch lg:justify-self-end">
+        <Polaroid />
+        <HangingLamp />
+      </div>
     </section>
   )
 }
 
 function Polaroid() {
   return (
-    <figure className="relative order-first w-fit -rotate-3 bg-[#fafaf9] p-2.5 pb-9 shadow-[0_1px_2px_rgb(0_0_0/0.08),0_16px_40px_-12px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out-quint hover:rotate-0 motion-reduce:transition-none sm:p-3 sm:pb-10 lg:order-none lg:justify-self-end">
+    <figure className="relative w-fit shrink-0 -rotate-3 bg-[#fafaf9] p-2.5 pb-9 shadow-[0_1px_2px_rgb(0_0_0/0.08),0_16px_40px_-12px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out-quint hover:rotate-0 motion-reduce:transition-none sm:p-3 sm:pb-10">
       <span
         aria-hidden
         className="absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-2 bg-yellow/90"

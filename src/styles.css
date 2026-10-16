@@ -23,6 +23,8 @@
   --color-yellow-deep: var(--yellow-deep);
   --color-yellow-text: var(--yellow-text);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-flicker-on: flicker-on 0.5s linear;
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -174,6 +176,23 @@
 .dark .tone-amber { --tone-text: #fbbf24; }
 .dark .tone-gray { --tone-text: #a1a1aa; }
 
+/* Hanging lamp: the bulb stutters on like a real filament. */
+@keyframes flicker-on {
+  0% { opacity: 0; }
+  12% { opacity: 0.9; }
+  22% { opacity: 0.2; }
+  38% { opacity: 1; }
+  52% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* Theme switches reveal as a circle (see lib/theme.ts), not a crossfade. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 /* Sections ease in as they scroll into view, where supported. */
 @supports (animation-timeline: view()) {
   @keyframes reveal {
@@ -188,7 +207,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .reveal { animation: none; }
+  .reveal, .animate-flicker-on { animation: none; }
 }
 
 /* Long-form post body. */
