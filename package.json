@@ -10,10 +10,12 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx}\"",
     "check": "prettier --check \"**/*.{ts,tsx,js,jsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy": "pnpm build && wrangler deploy"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
     "@tailwindcss/vite": "^4",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
@@ -38,9 +40,12 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6",
     "eslint": "^10",
+    "marked": "^18.1.1",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "shiki": "^4.5.0",
     "typescript": "^6.0.2",
-    "vite": "^8"
+    "vite": "^8",
+    "wrangler": "4.151.0"
   }
 }

@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thapa-sandesh",
+  "compatibility_date": "2026-10-01",
+  // The site is fully prerendered, so Cloudflare only serves static files.
+  "assets": {
+    "directory": "./dist/client",
+    // Pages are built as dir/index.html; serve them at /dir, matching canonicals.
+    "html_handling": "drop-trailing-slash",
+    "not_found_handling": "404-page",
+  },
+  "routes": [{ "pattern": "thapa-sandesh.com.np", "custom_domain": true }],
+}
