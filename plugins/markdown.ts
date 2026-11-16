@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from "node:fs"
+import path from "node:path"
 import { Marked } from "marked"
 import { createHighlighter } from "shiki"
 import type { Plugin } from "vite"
@@ -76,6 +78,8 @@ async function createRenderer() {
         const text = this.parser.parseInline(tokens)
         const id = text
           .replace(/<[^>]+>/g, "")
+          // Drop escaped characters like &#39; so "it's" becomes "its".
+          .replace(/&#?\w+;/g, "")
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "")
@@ -93,6 +97,25 @@ async function createRenderer() {
       },
     },
   })
+}
+
+/**
+ * Each post's slug and last-changed date (`updated`, else `date`), read
+ * straight from disk so the build config can set sitemap <lastmod>.
+ */
+export function readPostDates(dir: string) {
+  return readdirSync(dir)
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => {
+      const { data } = parseFrontmatter(
+        readFileSync(path.join(dir, file), "utf8")
+      )
+      const lastmod = data.updated ?? data.date
+      if (typeof lastmod !== "string") {
+        throw new Error(`${file}: frontmatter needs a "date"`)
+      }
+      return { slug: file.replace(/\.md$/, ""), lastmod }
+    })
 }
 
 // Frontmatter values are written as JSON (strings, arrays), so each line is

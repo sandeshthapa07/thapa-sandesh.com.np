@@ -35,5 +35,10 @@ Posts are compiled to HTML with syntax highlighting at build time by
 
 Colours, fonts and spacing follow notemap.com: dark `#0e0e10` with
 `#131316` panels, Geist, yellow `#fde047` accent. All tokens live at the top
-of `src/styles.css`, with a light theme under `:root` and the default dark
-theme under `.dark`.
+of `src/styles.css`: light values on `:root`, dark ones in its
+`@variant dark` block.
+
+The theme follows the visitor's system preference. The header toggle stores
+an override only while it differs from the system, and applies it through
+`<meta name="color-scheme">` (`src/lib/theme.ts`), which the CSS maps onto
+`color-scheme` and the `dark:` variant.

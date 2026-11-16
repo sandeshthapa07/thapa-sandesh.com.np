@@ -1,17 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { PostList } from "@/components/post-list"
 import { Band, SectionTitle } from "@/components/section"
-import { site } from "@/content/site"
 import { posts } from "@/lib/posts"
-import { seo } from "@/lib/seo"
+import { pageTitle, seo } from "@/lib/seo"
+import { writingSchema } from "@/lib/structured-data"
+
+const title = "Writing on React, Next.js, CSS and animation"
+const description =
+  "Notes from my work as a frontend developer in Nepal: React, Next.js, CSS and animation. What I learn and discover while building interfaces for the web."
 
 export const Route = createFileRoute("/writing/")({
   head: () =>
     seo({
-      title: `Writing — ${site.name}`,
-      description:
-        "Notes on what I learn and discover as a frontend developer.",
+      title: pageTitle(title),
+      description,
       path: "/writing",
+      jsonLd: writingSchema({ title, description, posts }),
     }),
   component: Writing,
 })

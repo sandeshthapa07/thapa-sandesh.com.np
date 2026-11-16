@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from "react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { ArrowRight, ArrowUpRight, MapPin } from "lucide-react"
-import { HangingLamp } from "@/components/hanging-lamp"
 import { PostList } from "@/components/post-list"
 import { Band, SectionTitle } from "@/components/section"
 import { projects } from "@/content/projects"
@@ -10,10 +9,16 @@ import { site } from "@/content/site"
 import { toolkit } from "@/content/toolkit"
 import { posts } from "@/lib/posts"
 import { seo } from "@/lib/seo"
+import { homeSchema } from "@/lib/structured-data"
 
 export const Route = createFileRoute("/")({
   head: () =>
-    seo({ title: site.title, description: site.description, path: "/" }),
+    seo({
+      title: site.title,
+      description: site.description,
+      path: "/",
+      jsonLd: homeSchema(),
+    }),
   component: Home,
 })
 
@@ -95,7 +100,7 @@ function Hero() {
   const links = site.socials.filter((social) => social.label !== "Email")
 
   return (
-    <section className="mx-auto grid max-w-[960px] grid-cols-1 gap-10 px-6 pt-8 pb-16 sm:px-8 sm:pt-16 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-16">
+    <section className="mx-auto grid max-w-[880px] grid-cols-1 gap-10 px-6 pt-8 pb-16 sm:px-8 sm:pt-16 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-16">
       <div>
         <h1 className="text-4xl leading-[1.1] font-semibold tracking-tight sm:text-5xl">
           Hi, I&apos;m Sandesh.
@@ -155,17 +160,14 @@ function Hero() {
           )}
         </p>
       </div>
-      <div className="order-first flex items-start gap-5 sm:gap-8 lg:order-none lg:items-center lg:gap-6 lg:self-stretch lg:justify-self-end">
-        <Polaroid />
-        <HangingLamp />
-      </div>
+      <Polaroid />
     </section>
   )
 }
 
 function Polaroid() {
   return (
-    <figure className="relative w-fit shrink-0 -rotate-3 bg-[#fafaf9] p-2.5 pb-9 shadow-[0_1px_2px_rgb(0_0_0/0.08),0_16px_40px_-12px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out-quint hover:rotate-0 motion-reduce:transition-none sm:p-3 sm:pb-10">
+    <figure className="relative order-first w-fit -rotate-3 bg-[#fafaf9] p-2.5 pb-9 shadow-[0_1px_2px_rgb(0_0_0/0.08),0_16px_40px_-12px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out-quint hover:rotate-0 motion-reduce:transition-none sm:p-3 sm:pb-10 lg:order-none lg:justify-self-end">
       <span
         aria-hidden
         className="absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-2 bg-yellow/90"
@@ -175,6 +177,7 @@ function Polaroid() {
         alt="Sandesh smiling in front of a red brick wall"
         width={460}
         height={460}
+        fetchPriority="high"
         className="size-40 object-cover sm:size-[230px]"
       />
       <figcaption className="absolute inset-x-0 bottom-2.5 text-center font-mono text-[11px] text-[#63636b] sm:bottom-3 sm:text-xs">
@@ -217,6 +220,8 @@ function ProjectCard({ project }: { project: Project }) {
             alt=""
             width={28}
             height={28}
+            loading="lazy"
+            decoding="async"
             className="size-full object-contain"
           />
         </span>

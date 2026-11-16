@@ -1,9 +1,10 @@
+import { useEffect } from "react"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRight, Menu, Moon, Sun, X } from "lucide-react"
 import { Dialog } from "radix-ui"
 import { Logo } from "@/components/logo"
 import { site } from "@/content/site"
-import { centerOf, toggleTheme } from "@/lib/theme"
+import { centerOf, syncThemeAcrossTabs, toggleTheme } from "@/lib/theme"
 import { cn } from "@/lib/utils"
 
 const brand =
@@ -45,15 +46,19 @@ export function SiteHeader() {
 }
 
 function ThemeToggle() {
+  useEffect(() => syncThemeAcrossTabs(), [])
+
   return (
     <button
       type="button"
       onClick={(event) => toggleTheme(centerOf(event.currentTarget))}
-      aria-label="Toggle light and dark theme"
       className={cn(iconButton, "sm:ml-1")}
     >
-      <Sun className="hidden size-4 dark:block" />
-      <Moon className="size-4 dark:hidden" />
+      <Sun aria-hidden className="hidden size-4 dark:block" />
+      <Moon aria-hidden className="size-4 dark:hidden" />
+      {/* Names the action; CSS keeps only the one for the current theme. */}
+      <span className="sr-only dark:hidden">Switch to dark theme</span>
+      <span className="sr-only hidden dark:inline">Switch to light theme</span>
     </button>
   )
 }

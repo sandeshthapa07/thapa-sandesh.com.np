@@ -5,7 +5,10 @@ export type PostMeta = {
   slug: string
   title: string
   description: string
+  /** Published, YYYY-MM-DD. */
   date: string
+  /** Last substantive edit, YYYY-MM-DD. Leave out until the post changes. */
+  updated?: string
   tags: string[]
   readingMinutes: number
 }
