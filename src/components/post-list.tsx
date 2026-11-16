@@ -1,9 +1,12 @@
+import { usePostHog } from "@posthog/react"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRight } from "lucide-react"
 import { formatDate } from "@/lib/posts"
 import type { PostMeta } from "@/lib/posts"
 
 export function PostList({ posts }: { posts: PostMeta[] }) {
+  const posthog = usePostHog()
+
   return (
     <ul className="mx-auto max-w-[720px] overflow-hidden rounded-[18px] bg-panel">
       {posts.map((post) => (
@@ -11,6 +14,9 @@ export function PostList({ posts }: { posts: PostMeta[] }) {
           <Link
             to="/writing/$slug"
             params={{ slug: post.slug }}
+            onClick={() =>
+              posthog.capture("writing_post_opened", { post_slug: post.slug })
+            }
             className="group flex items-start justify-between gap-6 px-6 py-5 transition-colors outline-none hover:bg-panel-2 focus-visible:bg-panel-2"
           >
             <div className="min-w-0">

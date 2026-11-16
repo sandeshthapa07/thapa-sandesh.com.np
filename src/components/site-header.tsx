@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { usePostHog } from "@posthog/react"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRight, Menu, Moon, Sun, X } from "lucide-react"
 import { Dialog } from "radix-ui"
@@ -14,6 +15,8 @@ const iconButton =
   "grid size-10 place-items-center rounded-full text-fg-2 transition-colors hover:bg-panel hover:text-foreground sm:size-9"
 
 export function SiteHeader() {
+  const posthog = usePostHog()
+
   return (
     <header className="flex h-16 items-center justify-between gap-4 px-3 sm:px-6">
       <Link to="/" className={brand}>
@@ -33,6 +36,9 @@ export function SiteHeader() {
           </Link>
           <a
             href={`mailto:${site.email}`}
+            onClick={() =>
+              posthog.capture("contact_initiated", { placement: "header" })
+            }
             className="rounded-full px-3 py-1.5 text-fg-2 transition-colors hover:text-foreground"
           >
             Contact
@@ -68,6 +74,7 @@ const menuLink =
 
 /** Below `sm` the nav folds into a sheet that drops in from the top. */
 function MobileMenu() {
+  const posthog = usePostHog()
   const socials = site.socials.filter((social) => social.label !== "Email")
 
   return (
@@ -118,7 +125,15 @@ function MobileMenu() {
               </li>
               <li>
                 <Dialog.Close asChild>
-                  <a href={`mailto:${site.email}`} className={menuLink}>
+                  <a
+                    href={`mailto:${site.email}`}
+                    onClick={() =>
+                      posthog.capture("contact_initiated", {
+                        placement: "mobile_menu",
+                      })
+                    }
+                    className={menuLink}
+                  >
                     Contact
                   </a>
                 </Dialog.Close>
@@ -132,6 +147,12 @@ function MobileMenu() {
                   href={social.href}
                   target="_blank"
                   rel="noreferrer"
+                  onClick={() =>
+                    posthog.capture("social_profile_visited", {
+                      platform: social.label.toLowerCase(),
+                      placement: "mobile_menu",
+                    })
+                  }
                   className="inline-flex items-center gap-1 py-1 text-fg-2 transition-colors hover:text-foreground"
                 >
                   {social.label}
