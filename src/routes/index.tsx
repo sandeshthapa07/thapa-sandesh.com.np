@@ -9,10 +9,16 @@ import { site } from "@/content/site"
 import { toolkit } from "@/content/toolkit"
 import { posts } from "@/lib/posts"
 import { seo } from "@/lib/seo"
+import { homeSchema } from "@/lib/structured-data"
 
 export const Route = createFileRoute("/")({
   head: () =>
-    seo({ title: site.title, description: site.description, path: "/" }),
+    seo({
+      title: site.title,
+      description: site.description,
+      path: "/",
+      jsonLd: homeSchema(),
+    }),
   component: Home,
 })
 
@@ -171,6 +177,7 @@ function Polaroid() {
         alt="Sandesh smiling in front of a red brick wall"
         width={460}
         height={460}
+        fetchPriority="high"
         className="size-40 object-cover sm:size-[230px]"
       />
       <figcaption className="absolute inset-x-0 bottom-2.5 text-center font-mono text-[11px] text-[#63636b] sm:bottom-3 sm:text-xs">
@@ -213,6 +220,8 @@ function ProjectCard({ project }: { project: Project }) {
             alt=""
             width={28}
             height={28}
+            loading="lazy"
+            decoding="async"
             className="size-full object-contain"
           />
         </span>

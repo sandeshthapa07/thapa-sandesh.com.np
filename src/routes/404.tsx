@@ -6,7 +6,7 @@ import { site } from "@/content/site"
 export const Route = createFileRoute("/404")({
   head: () => ({
     meta: [
-      { title: `Page not found · ${site.name}` },
+      { title: `Page not found | ${site.name}` },
       { name: "robots", content: "noindex" },
     ],
   }),

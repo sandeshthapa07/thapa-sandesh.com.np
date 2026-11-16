@@ -4,7 +4,27 @@
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * Dark follows the system preference unless the theme toggle pinned light,
+ * or it pinned dark. The pin lives in <meta name="color-scheme"> (see
+ * lib/theme.ts), so with no JS the site simply follows the system.
+ */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(
+      :root:not(:has(> head > meta[name="color-scheme"][content="light"])),
+      :root:not(:has(> head > meta[name="color-scheme"][content="light"])) *
+    ) {
+      @slot;
+    }
+  }
+  &:where(
+    :root:has(> head > meta[name="color-scheme"][content="dark"]),
+    :root:has(> head > meta[name="color-scheme"][content="dark"]) *
+  ) {
+    @slot;
+  }
+}
 
 @theme inline {
   --font-heading: var(--font-sans);
@@ -65,7 +85,7 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
 
   --panel: #f5f5f6;
   --panel-2: #ececee;
@@ -110,25 +130,31 @@
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: var(--line);
   --sidebar-ring: var(--ring);
-}
 
-.dark {
-  color-scheme: dark;
+  @variant dark {
+    --panel: #131316;
+    --panel-2: #1a1a1e;
+    --line: #1f1f23;
+    --line-strong: #2c2c32;
+    --fg-2: #a0a0a8;
+    --fg-3: #82828b;
+    --spoke: #4a4a52;
+    --yellow-text: #fde047;
 
-  --panel: #131316;
-  --panel-2: #1a1a1e;
-  --line: #1f1f23;
-  --line-strong: #2c2c32;
-  --fg-2: #a0a0a8;
-  --fg-3: #82828b;
-  --spoke: #4a4a52;
-  --yellow-text: #fde047;
+    --background: #0e0e10;
+    --foreground: #f5f5f7;
+    --popover: var(--panel);
+    --destructive: oklch(0.704 0.191 22.216);
+    --ring: #52525b;
+  }
 
-  --background: #0e0e10;
-  --foreground: #f5f5f7;
-  --popover: var(--panel);
-  --destructive: oklch(0.704 0.191 22.216);
-  --ring: #52525b;
+  /* A pinned theme also switches native UI (scrollbars, form controls). */
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
 }
 
 @layer base {
@@ -155,24 +181,22 @@
 }
 
 /* Per-colour node and icon tints. */
-.tone-blue { --tone: #3b82f6; --tone-text: #2563eb; }
-.tone-violet { --tone: #8b5cf6; --tone-text: #7c3aed; }
-.tone-emerald { --tone: #10b981; --tone-text: #059669; }
-.tone-pink { --tone: #ec4899; --tone-text: #db2777; }
-.tone-orange { --tone: #f97316; --tone-text: #ea580c; }
-.tone-sky { --tone: #0ea5e9; --tone-text: #0284c7; }
-.tone-teal { --tone: #14b8a6; --tone-text: #0d9488; }
-.tone-amber { --tone: #f59e0b; --tone-text: #d97706; }
-.tone-gray { --tone: #71717a; --tone-text: #52525b; }
-.dark .tone-blue { --tone-text: #60a5fa; }
-.dark .tone-violet { --tone-text: #a78bfa; }
-.dark .tone-emerald { --tone-text: #34d399; }
-.dark .tone-pink { --tone-text: #f472b6; }
-.dark .tone-orange { --tone-text: #fb923c; }
-.dark .tone-sky { --tone-text: #38bdf8; }
-.dark .tone-teal { --tone-text: #2dd4bf; }
-.dark .tone-amber { --tone-text: #fbbf24; }
-.dark .tone-gray { --tone-text: #a1a1aa; }
+.tone-blue { --tone: #3b82f6; --tone-text: #2563eb; @variant dark { --tone-text: #60a5fa; } }
+.tone-violet { --tone: #8b5cf6; --tone-text: #7c3aed; @variant dark { --tone-text: #a78bfa; } }
+.tone-emerald { --tone: #10b981; --tone-text: #059669; @variant dark { --tone-text: #34d399; } }
+.tone-pink { --tone: #ec4899; --tone-text: #db2777; @variant dark { --tone-text: #f472b6; } }
+.tone-orange { --tone: #f97316; --tone-text: #ea580c; @variant dark { --tone-text: #fb923c; } }
+.tone-sky { --tone: #0ea5e9; --tone-text: #0284c7; @variant dark { --tone-text: #38bdf8; } }
+.tone-teal { --tone: #14b8a6; --tone-text: #0d9488; @variant dark { --tone-text: #2dd4bf; } }
+.tone-amber { --tone: #f59e0b; --tone-text: #d97706; @variant dark { --tone-text: #fbbf24; } }
+.tone-gray { --tone: #71717a; --tone-text: #52525b; @variant dark { --tone-text: #a1a1aa; } }
+
+/* Theme switches reveal as a circle (see lib/theme.ts), not a crossfade. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
 
 /* Sections ease in as they scroll into view, where supported. */
 @supports (animation-timeline: view()) {
@@ -255,8 +279,10 @@
   line-height: 1.7;
   background: transparent !important;
 }
-.prose pre span { color: var(--shiki-light); }
-.dark .prose pre span { color: var(--shiki-dark); }
+.prose pre span {
+  color: var(--shiki-light);
+  @variant dark { color: var(--shiki-dark); }
+}
 .prose .compare {
   display: grid;
   gap: 10px;

@@ -1,10 +1,21 @@
+import { fileURLToPath } from "node:url"
 import { defineConfig } from "vite"
 import { devtools } from "@tanstack/devtools-vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
 import viteReact from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
-import { markdown } from "./plugins/markdown.ts"
+import { markdown, readPostDates } from "./plugins/markdown.ts"
 import { site } from "./src/content/site.ts"
+
+// Sitemap <lastmod> must be when a page last changed, not the build date
+// (TanStack's default), or search engines learn to ignore it.
+const posts = readPostDates(
+  fileURLToPath(new URL("./src/content/posts", import.meta.url))
+)
+const newestPost = posts
+  .map((post) => post.lastmod)
+  .sort()
+  .at(-1)
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
@@ -29,6 +40,11 @@ const config = defineConfig({
         },
         // Index route alias of /writing; skipped by the filter above.
         { path: "/writing/", sitemap: { exclude: true } },
+        { path: "/writing", sitemap: { lastmod: newestPost } },
+        ...posts.map((post) => ({
+          path: `/writing/${post.slug}`,
+          sitemap: { lastmod: post.lastmod },
+        })),
       ],
       sitemap: { host: site.url },
     }),

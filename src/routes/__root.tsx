@@ -8,15 +8,17 @@ import { site } from "@/content/site"
 
 import appCss from "../styles.css?url"
 
-// Runs before paint so a saved light preference never flashes dark first.
-const themeScript = `try{if(localStorage.getItem("theme")==="light")document.documentElement.classList.remove("dark")}catch(e){}`
+// Runs before paint so a saved theme override never flashes the other theme
+// first (see lib/theme.ts). It creates the color-scheme <meta> itself because
+// React matches <meta> tags by `content` while hydrating: editing one React
+// rendered would make React append a duplicate.
+const colorSchemeScript = `(function(){var m=document.createElement("meta");m.name="color-scheme";m.content="light dark";try{var s=localStorage.getItem("theme");if(s==="light"||s==="dark")m.content=s}catch(e){}document.head.appendChild(m)})()`
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#0e0e10" },
       { title: site.title },
       { name: "description", content: site.description },
     ],
@@ -33,9 +35,20 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: colorSchemeScript }} />
+        {/* Rendered here, not in `head()`: the router keeps one meta per name. */}
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: light)"
+          content="#ffffff"
+        />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: dark)"
+          content="#0e0e10"
+        />
         <HeadContent />
       </head>
       <body>

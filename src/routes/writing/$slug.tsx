@@ -2,7 +2,8 @@ import { Link, createFileRoute, notFound } from "@tanstack/react-router"
 import { ArrowLeft } from "lucide-react"
 import { site } from "@/content/site"
 import { formatDate, loadPost } from "@/lib/posts"
-import { seo } from "@/lib/seo"
+import { pageTitle, seo } from "@/lib/seo"
+import { postSchema } from "@/lib/structured-data"
 
 export const Route = createFileRoute("/writing/$slug")({
   loader: async ({ params }) => {
@@ -10,13 +11,14 @@ export const Route = createFileRoute("/writing/$slug")({
     if (!post) throw notFound()
     return post
   },
-  head: ({ loaderData }) =>
-    loaderData
+  head: ({ loaderData: post }) =>
+    post
       ? seo({
-          title: `${loaderData.title} — ${site.name}`,
-          description: loaderData.description,
-          path: `/writing/${loaderData.slug}`,
-          type: "article",
+          title: pageTitle(post.title),
+          description: post.description,
+          path: `/writing/${post.slug}`,
+          article: { publishedTime: post.date, modifiedTime: post.updated },
+          jsonLd: postSchema(post),
         })
       : {},
   component: Post,
@@ -37,6 +39,14 @@ function Post() {
         <header className="mt-10 border-b border-line pb-10">
           <p className="font-mono text-xs text-fg-3 tabular-nums">
             <time dateTime={post.date}>{formatDate(post.date, "long")}</time>
+            {post.updated && (
+              <>
+                {" · Updated "}
+                <time dateTime={post.updated}>
+                  {formatDate(post.updated, "long")}
+                </time>
+              </>
+            )}
             {" · "}
             {post.readingMinutes} min read
           </p>
@@ -46,6 +56,27 @@ function Post() {
           <p className="mt-4 text-base leading-relaxed text-pretty text-fg-2">
             {post.description}
           </p>
+          <div className="mt-6 flex items-center gap-3">
+            <img
+              src="/me.jpg"
+              alt=""
+              width={36}
+              height={36}
+              className="size-9 rounded-full object-cover"
+            />
+            <p className="text-sm leading-snug">
+              <Link
+                to="/"
+                rel="author"
+                className="font-medium underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-yellow-deep"
+              >
+                {site.name}
+              </Link>
+              <span className="block text-xs text-fg-3">
+                {site.role} at {site.company}
+              </span>
+            </p>
+          </div>
           <ul className="mt-6 flex flex-wrap gap-1.5">
             {post.tags.map((tag) => (
               <li

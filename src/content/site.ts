@@ -17,9 +17,9 @@ export const site = {
   location: "Nepal",
   email: "suman.sandes@gmail.com",
   url: "https://thapa-sandesh.com.np",
-  title: "Sandesh Thapa — Frontend Developer",
+  title: "Sandesh Thapa | Frontend Developer",
   description:
-    "Frontend developer at AITC International building with React and Next.js. I care deeply about craft and accessibility, and I like interfaces that feel fast and effortless.",
+    "Frontend developer at AITC International building with React and Next.js. I care about craft and accessibility, and interfaces that feel fast and effortless.",
   github: "https://github.com/sandeshthapa07",
   socials: [
     { label: "GitHub", href: "https://github.com/sandeshthapa07" },
