@@ -105,6 +105,27 @@ these five ideas and framework marketing gets much easier to read:
 Most frameworks can do several of these. What matters is which one is
 their default, because the default is what you will live with.
 
+Here is one page delivered four ways. Each row runs from the first request
+to two moments: when <span class="c-green">content</span> is on screen, and
+when the page is interactive. Pick a device, then drag how much
+<span class="c-orange">JavaScript</span> the page ships, here
+<span class="scrub" data-figure="rendering" data-key="js"></span>:
+
+<figure class="explorable" id="rendering" aria-label="Four timelines for the same page, static, SSR, SPA and islands, showing when content appears and when the page becomes interactive."></figure>
+
+Static and SSR show content as soon as the HTML arrives, SSR a little later
+because the server renders it first. Both stay inert until the JavaScript has
+downloaded and run, so the time to "interactive" grows with every kilobyte.
+The SPA has nothing to show until its JavaScript has run and fetched the
+data, so it's last on both counts. Islands send only the JavaScript for
+their interactive parts, so they stay fast however far you drag the slider.
+Compare
+<button class="set" data-figure="rendering" data-set="net=desktop js=300">a
+laptop on a fast network</button> with
+<button class="set" data-figure="rendering" data-set="net=mobile js=300">a
+phone on slow 4G</button>: the same 300 KB of JavaScript costs about half a
+second on one and almost three seconds on the other.
+
 ## What each framework is actually for
 
 ### Next.js

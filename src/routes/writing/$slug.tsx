@@ -121,6 +121,36 @@ function PostBody({ html }: { html: string }) {
     )
   }, [html])
 
+  // Live figures (<figure class="explorable">) need the safis runtime, which
+  // is big, so it loads only when the first figure comes near the viewport.
+  useEffect(() => {
+    const root = body.current
+    const figures = root?.querySelectorAll("figure.explorable")
+    if (!root || !figures?.length) return
+    let unmount: (() => void) | undefined
+    let cancelled = false
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        observer.disconnect()
+        import("@/components/figures")
+          .then(({ mountFigures }) => {
+            if (!cancelled) unmount = mountFigures(root)
+          })
+          .catch((error: unknown) => {
+            console.error("Couldn't load the figures", error)
+          })
+      },
+      { rootMargin: "1000px 0px" }
+    )
+    figures.forEach((figure) => observer.observe(figure))
+    return () => {
+      cancelled = true
+      observer.disconnect()
+      unmount?.()
+    }
+  }, [html])
+
   return (
     <>
       <div

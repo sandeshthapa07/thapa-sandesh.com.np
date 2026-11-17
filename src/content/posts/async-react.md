@@ -124,6 +124,35 @@ render skip the chart, since its `text` prop hasn't changed yet. When you
 can't reach the state's `set` function, for example when the text arrives as
 a prop, `useDeferredValue` does the same job.
 
+Here is what the main thread is doing meanwhile. Someone types "async react"
+at about nine letters a second. Each <span class="c-blue">blue</span> mark is
+the browser handling a keystroke, and each
+<span class="c-orange" data-part="render" data-figure="main-thread">orange
+block</span> is React rendering the chart, which takes
+<span class="scrub" data-figure="main-thread" data-key="cost"></span> like the
+100 bars above. Compare
+<button class="set" data-figure="main-thread" data-set="transition=false">a
+normal update</button> with
+<button class="set" data-figure="main-thread" data-set="transition=true">a
+transition</button>:
+
+<figure class="explorable" id="main-thread" aria-label="A timeline of the main thread while someone types. Keystrokes on top, the work the thread does in the middle, and the moment each letter reaches the screen at the bottom."></figure>
+
+With a normal update, every keystroke waits behind the renders queued in
+front of it. The slanted lines get longer with each letter, and turn red
+once the delay passes 100 ms, about where typing stops feeling instant. At
+200 ms per render, the input finishes showing "async react" more than a
+second after the last key was pressed.
+
+With a transition, each letter is on screen within a few milliseconds.
+React renders the chart in slices of about 5 ms and checks for input between
+them. When a new keystroke arrives, it throws away the render that just
+became outdated (the hatched blocks) and starts again with the new text. The
+chart only catches up when you pause. Drag the render time down to
+<button class="set" data-figure="main-thread" data-set="cost=30">30 ms</button>
+and both versions keep up, which is why you only need a transition for
+updates that are actually slow.
+
 ### 2. Every click waits for the server
 
 Most actions go to a server, and a round trip takes anywhere from a few
@@ -346,6 +375,24 @@ Try typing "react" quickly with Network on Random, and watch the Requests
 log. Whenever an older request finishes last, the list shows results for the
 wrong query. Switch to Fast and "Loading…" flashes on every keystroke
 instead.
+
+Here is that race slowed down. Typing "react" sends five requests, one per
+letter, and each <span class="c-orange">orange bar</span> is a request
+waiting for its response. Drag the end of a bar to change how long that
+request takes:
+
+<figure class="explorable" id="request-race" aria-label="Five search requests on a timeline, one per letter of react, each ending when its response arrives. The bottom row shows which query's results are on screen."></figure>
+
+With **Set state on arrival**, which is what the effect above does, the list
+always shows the response that landed last. Here that's "re", from the
+second keystroke, so the search box says "react" and the results are for
+"re". The order you typed in doesn't matter, only the order the network
+answered in. Switch to
+<button class="set" data-figure="request-race" data-set="mode=latest">Latest
+query only</button> and responses for queries you've already typed past are
+ignored, so the list waits for "react". The classic fix is an `ignore` flag
+in the effect's cleanup. Suspense gets the same result without one, as
+you'll see below.
 
 It works on localhost. On a real network:
 
