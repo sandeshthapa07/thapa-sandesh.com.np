@@ -613,3 +613,106 @@
 .pg-log [data-status="pending"] > :last-child { color: var(--yellow-text); }
 .pg-log [data-status="failed"] > :last-child { color: var(--pg-danger); }
 .prose .pg-log-empty { margin-top: 0.4rem; font-size: 0.8125rem; color: var(--fg-3); }
+
+/*
+ * Live figures (components/figures), drawn by the safis runtime. Its book
+ * theme is scoped to .safis; these rules swap in the site's colours and
+ * Geist so the figures read as part of the post. The extra :root and the
+ * doubled class outrank the runtime's own `:root[data-theme] .safis`.
+ */
+.prose figure.explorable {
+  margin-block: 1.5em;
+  /* Holds the space until the runtime mounts the figure. */
+  min-height: 20rem;
+}
+:root .prose figure.explorable.safis.safis {
+  min-height: 0;
+  --bg: var(--background);
+  --ink: var(--foreground);
+  --muted: var(--fg-3);
+  --faint: var(--line-strong);
+  --grid: var(--line);
+  --rule: var(--line);
+  --brass: var(--yellow-text);
+  --accent: var(--foreground);
+  --font-text: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, monospace;
+  background: transparent;
+  color: var(--fg-2);
+  font-family: var(--font-text);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* The figures' subject colours, for words in the prose that name them.
+   Same values as the runtime's palette, so a "blue" word matches the canvas. */
+.prose {
+  --c-red: #d22d2d;
+  --c-orange: #bd4f08;
+  --c-green: #18793e;
+  --c-blue: #2457d6;
+  --c-purple: #7438e0;
+  @variant dark {
+    --c-red: #f47272;
+    --c-orange: #f59447;
+    --c-green: #4fd185;
+    --c-blue: #6aa5ff;
+    --c-purple: #ac8cff;
+  }
+}
+.prose .c-red { --c: var(--c-red); }
+.prose .c-orange { --c: var(--c-orange); }
+.prose .c-green { --c: var(--c-green); }
+.prose .c-blue { --c: var(--c-blue); }
+.prose .c-purple { --c: var(--c-purple); }
+.prose :is(.c-red, .c-orange, .c-green, .c-blue, .c-purple) {
+  color: var(--c);
+  font-weight: 600;
+}
+.prose [data-part] { cursor: default; }
+
+/* A number in a sentence that drives a figure: drag it sideways. */
+.prose .scrub {
+  --c: var(--foreground);
+  color: var(--c);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+  border-bottom: 1.5px dashed color-mix(in srgb, var(--c) 60%, transparent);
+  border-radius: 2px;
+  padding-inline: 1px;
+}
+.prose .scrub:hover,
+.prose .scrub.active {
+  background: color-mix(in srgb, var(--yellow) 30%, transparent);
+  border-bottom-style: solid;
+}
+.prose .scrub.active { cursor: grabbing; }
+
+/* "Try this" links that set a figure. */
+.prose button.set {
+  --c: var(--foreground);
+  display: inline;
+  padding: 0 1px;
+  border-radius: 3px;
+  font: inherit;
+  font-weight: 500;
+  color: var(--c);
+  text-decoration: underline;
+  text-decoration-color: var(--yellow-deep);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.prose button.set:hover {
+  background: color-mix(in srgb, var(--yellow) 30%, transparent);
+}
+.prose :is(.scrub, button.set):focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}

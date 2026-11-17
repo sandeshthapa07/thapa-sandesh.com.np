@@ -40,6 +40,23 @@ Every step is a model call and a guess. That makes the whole thing:
 - **Lossy.** Prices and dates are read back from pixels, so a result can be
   wrong without anyone noticing.
 
+The fragility compounds, because a run only succeeds if every step does.
+Say the agent gets each step right
+<span class="scrub" data-figure="agent-steps" data-key="p"></span> of the
+time, and the flight search takes
+<span class="scrub" data-figure="agent-steps" data-key="steps"></span> steps.
+Here are 100 agents trying it:
+
+<figure class="explorable" id="agent-steps" aria-label="A bar chart of 100 agent runs. Bars show how many runs are still going after each step of driving the UI, next to a single bar for one tool call."></figure>
+
+Each step only fails now and then, but the chance of finishing is the
+per-step rate multiplied by itself once per step: 0.95 to the power of 12 is
+about 54%, so roughly half the runs never book anything. A tool call is one
+step. Even at
+<button class="set" data-figure="agent-steps" data-set="p=99">99% per
+step</button>, a 12-step flow fails about one run in nine, while the tool
+call fails one in a hundred.
+
 ## What WebMCP changes
 
 WebMCP is a proposed web standard that lets a site say what it can do,
