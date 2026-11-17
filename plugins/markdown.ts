@@ -62,7 +62,8 @@ async function createRenderer() {
     renderer: {
       code({ text, lang = "" }) {
         // Fence info like: ts title="lib/posts.ts"
-        const language = lang.split(/\s/)[0] || "text"
+        //   or: jsx playground title="search.jsx" network="slow"
+        const [language = "text", ...flags] = lang.split(/\s+/)
         const title = lang.match(/title="([^"]+)"/)?.[1]
         const highlighted = highlighter.codeToHtml(text, {
           lang: LANGS.includes(language) ? language : "text",
@@ -72,7 +73,14 @@ async function createRenderer() {
         const caption = title
           ? `<figcaption>${escapeHtml(title)}</figcaption>`
           : ""
-        return `<figure class="code">${caption}${highlighted}</figure>\n`
+        const figure = `<figure class="code">${caption}${highlighted}</figure>`
+        if (!flags.includes("playground")) return `${figure}\n`
+
+        // The highlighted code stays as the no-JS version. On the client,
+        // components/playground.tsx reads it from the <pre> and replaces it
+        // with an editor and a live preview.
+        const network = lang.match(/network="([^"]+)"/)?.[1] ?? "fast"
+        return `<div class="playground" data-title="${escapeHtml(title ?? "App.jsx")}" data-network="${escapeHtml(network)}">${figure}</div>\n`
       },
       heading({ tokens, depth }) {
         const text = this.parser.parseInline(tokens)

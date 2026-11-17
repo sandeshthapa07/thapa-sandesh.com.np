@@ -321,3 +321,295 @@
   border: 1px solid var(--line);
 }
 .prose .video iframe { width: 100%; height: 100%; border: 0; }
+
+/*
+ * Live playgrounds (components/playground). Wider than the text column on
+ * large screens, with the editor and preview side by side once there's room.
+ * The highlighted code is the no-JS version; it hides once the editor mounts.
+ */
+.prose .playground {
+  --pg-width: min(64rem, 100dvw - 2rem);
+  inline-size: var(--pg-width);
+  margin-inline: calc((100% - var(--pg-width)) / 2);
+  margin-block: 1.75em;
+}
+.prose .playground > figure.code { margin: 0; }
+.prose .playground:has(> .pg) > figure.code { display: none; }
+
+.pg {
+  /* Syntax colours, matching Shiki's github themes on the static blocks. */
+  --pg-fg: #24292e;
+  --pg-comment: #6a737d;
+  --pg-keyword: #d73a49;
+  --pg-string: #032f62;
+  --pg-function: #6f42c1;
+  --pg-tag: #22863a;
+  --pg-constant: #005cc5;
+  --pg-danger: #b91c1c;
+  @variant dark {
+    --pg-fg: #e6edf3;
+    --pg-comment: #8b949e;
+    --pg-keyword: #ff7b72;
+    --pg-string: #a5d6ff;
+    --pg-function: #d2a8ff;
+    --pg-tag: #7ee787;
+    --pg-constant: #79c0ff;
+    --pg-danger: #fca5a5;
+  }
+  container-type: inline-size;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  /* Clip children to the rounded corners. */
+  overflow: clip;
+}
+
+.pg-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: safe center;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem 0.5rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+}
+.pg-title {
+  margin-inline-end: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--fg-3);
+}
+.pg-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+.pg-tools [role="group"] {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-2);
+}
+.pg-tools-label {
+  padding-inline: 0.5rem 0.25rem;
+  font-size: 0.75rem;
+  color: var(--fg-3);
+}
+.pg-tools button {
+  min-inline-size: 1.75rem;
+  min-block-size: 1.75rem;
+  padding-inline: 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--fg-2);
+}
+.pg-tools > button {
+  border-color: var(--line);
+  background: var(--background);
+}
+.pg-tools button[aria-pressed="true"] {
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
+}
+.pg-tools button:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+.pg-tools [role="separator"] {
+  block-size: 1.25rem;
+  border-inline-start: 1px solid var(--line-strong);
+}
+/* When the toolbar wraps, a separator can end up alone at the end of a row.
+   Hide it visually but keep it in the accessibility tree. */
+@container (inline-size < 34rem) {
+  .pg-tools [role="separator"] { opacity: 0; }
+}
+@media (hover: hover) {
+  .pg-tools button[aria-pressed="false"]:hover,
+  .pg-tools button:not([aria-pressed]):hover { color: var(--foreground); }
+}
+@media (pointer: coarse) {
+  .pg-tools button { min-block-size: 2.25rem; }
+}
+@media (forced-colors: active) {
+  .pg-tools button[aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
+}
+
+.pg-body { display: grid; }
+.pg-editor {
+  max-block-size: 24rem;
+  overflow: auto;
+  font-family: var(--font-mono);
+}
+/* react-live and use-editable set padding, wrapping and `outline: none`
+   inline, hence !important. Code scrolls sideways instead of wrapping. */
+.prose .pg-editor pre {
+  overflow: visible;
+  inline-size: max-content;
+  min-inline-size: 100%;
+  min-block-size: 100%;
+  padding: 1rem 1.1rem !important;
+  white-space: pre !important;
+  overflow-wrap: normal !important;
+  tab-size: 2;
+}
+.prose .pg-editor pre:focus-visible {
+  outline: 2px solid var(--foreground) !important;
+  outline-offset: -2px;
+}
+.prose .pg-editor pre span { color: inherit; }
+
+.pg-output {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-inline-size: 0;
+  padding: 1rem 1.1rem;
+  border-top: 1px solid var(--line);
+  background: var(--background);
+}
+@container (inline-size >= 46rem) {
+  .pg-body { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+  .pg-editor { max-block-size: 34rem; }
+  .pg-output { border-top: 0; border-inline-start: 1px solid var(--line); }
+}
+.prose .pg-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+/* A neutral look for whatever the example renders. :where() keeps these
+   easy to override from the example's own styles. */
+.prose .pg-preview {
+  min-block-size: 5rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--foreground);
+}
+.pg-preview > * + *,
+.pg-preview :where(form, div) > * + * { margin-top: 0.75rem; }
+.pg-preview :where(form) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+}
+.pg-preview :where(form) > * + * { margin-top: 0; }
+.pg-preview :where(form) > :where(p) { flex-basis: 100%; }
+.pg-preview :where(label) {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  color: var(--fg-2);
+}
+.pg-preview :where(label:has(> input[type="checkbox"])) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+.pg-preview :where(input[type="checkbox"]) {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+}
+.pg-preview :where(input:not([type="checkbox"], [type="radio"])) {
+  inline-size: min(100%, 18rem);
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--background);
+  font-size: 0.9375rem;
+  color: var(--foreground);
+}
+.pg-preview :where(button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-block-size: 2.25rem;
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.pg-preview :where(button[aria-pressed="true"]) {
+  background: var(--yellow);
+  border-color: var(--yellow-deep);
+  color: #111;
+}
+.pg-preview :where(button:disabled) { opacity: 0.6; }
+.pg-preview :where(button, input):focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+.pg-preview :where([role="alert"]) { color: var(--pg-danger); }
+/* The delayed pending indicator from the action props example: it only
+   appears if the action takes longer than 300ms. */
+.pg-preview :where(button[data-pending])::after {
+  content: "";
+  inline-size: 0.8em;
+  block-size: 0.8em;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: pg-appear 150ms 300ms both;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pg-preview :where(button[data-pending])::after {
+    animation:
+      pg-spin 0.7s linear infinite,
+      pg-appear 150ms 300ms both;
+  }
+}
+@keyframes pg-appear { from { opacity: 0; } }
+@keyframes pg-spin { to { rotate: 1turn; } }
+
+.prose .pg-error {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pg-danger) 10%, transparent);
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  color: var(--pg-danger);
+}
+
+.pg-log {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+}
+.prose .pg-log ul {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.4rem;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+.prose .pg-log li { display: flex; justify-content: space-between; gap: 1rem; margin: 0; }
+.pg-log-call { overflow-wrap: anywhere; color: var(--fg-2); }
+.pg-log [data-status="pending"] > :last-child { color: var(--yellow-text); }
+.pg-log [data-status="failed"] > :last-child { color: var(--pg-danger); }
+.prose .pg-log-empty { margin-top: 0.4rem; font-size: 0.8125rem; color: var(--fg-3); }

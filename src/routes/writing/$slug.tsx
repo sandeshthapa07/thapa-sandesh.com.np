@@ -1,5 +1,8 @@
+import { Suspense, lazy, useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { Link, createFileRoute, notFound } from "@tanstack/react-router"
 import { ArrowLeft } from "lucide-react"
+import type { PlaygroundProps } from "@/components/playground"
 import { site } from "@/content/site"
 import { formatDate, loadPost } from "@/lib/posts"
 import { pageTitle, seo } from "@/lib/seo"
@@ -88,11 +91,52 @@ function Post() {
             ))}
           </ul>
         </header>
-        <div
-          className="prose mt-10"
-          dangerouslySetInnerHTML={{ __html: post.html }}
-        />
+        <PostBody key={post.slug} html={post.html} />
       </article>
+    </>
+  )
+}
+
+// Loaded only on posts that contain a playground.
+const Playground = lazy(() => import("@/components/playground"))
+
+type PlaygroundSlot = PlaygroundProps & { node: HTMLElement }
+
+function PostBody({ html }: { html: string }) {
+  const body = useRef<HTMLDivElement>(null)
+  const [slots, setSlots] = useState<Array<PlaygroundSlot>>([])
+
+  // Playground fences render as highlighted code inside a .playground
+  // element. After hydration, mount a live editor into each one; the static
+  // code stays until it loads (see styles.css).
+  useEffect(() => {
+    const nodes = body.current?.querySelectorAll<HTMLElement>(".playground")
+    setSlots(
+      Array.from(nodes ?? [], (node) => ({
+        node,
+        code: node.querySelector("pre")?.textContent ?? "",
+        title: node.dataset.title ?? "App.jsx",
+        network: node.dataset.network,
+      }))
+    )
+  }, [html])
+
+  return (
+    <>
+      <div
+        ref={body}
+        className="prose mt-10"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+      {slots.map(({ node, ...props }, index) =>
+        createPortal(
+          <Suspense fallback={null}>
+            <Playground {...props} />
+          </Suspense>,
+          node,
+          index
+        )
+      )}
     </>
   )
 }
