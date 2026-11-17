@@ -4,5 +4,6 @@ allowBuilds:
   esbuild: true
   lightningcss: true
   unrs-resolver: true
+  core-js: false
   msw: false
   workerd: true

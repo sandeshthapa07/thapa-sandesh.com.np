@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react"
+import { usePostHog } from "@posthog/react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { ArrowRight, ArrowUpRight, MapPin } from "lucide-react"
 import { PostList } from "@/components/post-list"
@@ -96,6 +97,7 @@ const inlineLink =
   "text-foreground underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-yellow-deep"
 
 function Hero() {
+  const posthog = usePostHog()
   const time = useNepalTime()
   const links = site.socials.filter((social) => social.label !== "Email")
 
@@ -132,6 +134,12 @@ function Hero() {
           <li>
             <a
               href={`mailto:${site.email}`}
+              onClick={() => {
+                posthog.capture("contact_initiated", { placement: "hero" })
+                posthog.logger.info("contact link selected", {
+                  placement: "hero",
+                })
+              }}
               className="inline-flex items-center gap-1.5 font-medium underline decoration-yellow decoration-2 underline-offset-[6px] transition-colors hover:decoration-yellow-deep [&_svg]:transition-transform hover:[&_svg]:translate-x-0.5"
             >
               Say hi <ArrowRight className="size-3.5" />
@@ -143,6 +151,18 @@ function Hero() {
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => {
+                  const platform = link.label.toLowerCase()
+
+                  posthog.capture("social_profile_visited", {
+                    platform,
+                    placement: "hero",
+                  })
+                  posthog.logger.info("social profile link selected", {
+                    platform,
+                    placement: "hero",
+                  })
+                }}
                 className="inline-flex items-center gap-1 text-fg-2 transition-colors hover:text-foreground"
               >
                 {link.label} <ArrowUpRight className="size-3.5 text-fg-3" />
@@ -209,6 +229,7 @@ function useNepalTime() {
 }
 
 function ProjectCard({ project }: { project: Project }) {
+  const posthog = usePostHog()
   const domain = new URL(project.href).hostname
 
   return (
@@ -235,6 +256,17 @@ function ProjectCard({ project }: { project: Project }) {
           href={project.href}
           target="_blank"
           rel="noreferrer"
+          onClick={() => {
+            const projectType = project.badge ?? "other"
+
+            posthog.capture("project_visited", {
+              project: project.title,
+              project_type: projectType,
+            })
+            posthog.logger.info("portfolio project link selected", {
+              project_type: projectType,
+            })
+          }}
           className="outline-none after:absolute after:inset-0 after:rounded-[18px] focus-visible:after:ring-2 focus-visible:after:ring-ring"
         >
           {project.title}
@@ -263,12 +295,20 @@ function ProjectCard({ project }: { project: Project }) {
 }
 
 function MoreLink({ href, children }: { href: string; children: string }) {
+  const posthog = usePostHog()
+
   return (
     <div className="py-6 text-center">
       <a
         href={href}
         target="_blank"
         rel="noreferrer"
+        onClick={() =>
+          posthog.capture("social_profile_visited", {
+            platform: "github",
+            placement: "projects",
+          })
+        }
         className="inline-flex items-center gap-1.5 text-sm text-fg-3 transition-colors hover:text-foreground"
       >
         {children} <ArrowUpRight className="size-3.5" />
