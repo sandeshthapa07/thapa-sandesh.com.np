@@ -45,6 +45,10 @@ const config = defineConfig({
           path: `/writing/${post.slug}`,
           sitemap: { lastmod: post.lastmod },
         })),
+        // Files for AI agents. No page links to them, so the crawl would miss
+        // them, and they aren't pages for search results, so no sitemap.
+        { path: "/llms.txt", sitemap: { exclude: true } },
+        { path: "/llms-full.txt", sitemap: { exclude: true } },
       ],
       sitemap: { host: site.url },
     }),
