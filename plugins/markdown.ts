@@ -8,6 +8,7 @@ import type { Plugin } from "vite"
 // and the highlighter never reaches the browser.
 //   import { meta, html } from "./post.md"   -> metadata + rendered body
 //   import { meta } from "./post.md?meta"    -> metadata only (for lists)
+//   import { source } from "./post.md?source" -> Markdown body, no frontmatter
 
 const THEMES = { light: "github-light", dark: "github-dark-default" } as const
 const LANGS = [
@@ -31,9 +32,14 @@ export function markdown(): Plugin {
     enforce: "pre",
     async transform(source, id) {
       const [file, query] = id.split("?")
-      if (!file.endsWith(".md") || (query && query !== "meta")) return
+      if (!file.endsWith(".md")) return
+      if (query && query !== "meta" && query !== "source") return
 
       const { data, body } = parseFrontmatter(source)
+      if (query === "source") {
+        const code = `export const source = ${JSON.stringify(body)};\n`
+        return { code, map: null, moduleType: "js" }
+      }
       const words = body.split(/\s+/).filter(Boolean).length
       const meta = {
         ...data,

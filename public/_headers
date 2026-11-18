@@ -1,0 +1,9 @@
+# Cloudflare headers for static files (not served itself). Plain-text files
+# get no charset by default, and some clients then misread characters like
+# "é" as Latin-1.
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+/llms-full.txt
+  Content-Type: text/plain; charset=utf-8
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
