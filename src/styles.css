@@ -323,6 +323,48 @@
 .prose .video iframe { width: 100%; height: 100%; border: 0; }
 
 /*
+ * Stick-figure scenes (public/scenes, loaded by routes/writing/$slug.tsx).
+ * Each sits on a little paper stage with a faint dot grid. The box keeps the
+ * scenes' 540 × 240 shape so nothing shifts when the canvas mounts. In dark
+ * mode only the canvas is inverted: ink turns light, colours keep their hue.
+ */
+.prose figure.scene { margin-block: 1.75em; }
+.prose stick-scene {
+  --scene-bg: #ffffff;
+  --scene-dot: #e6e6e6;
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  aspect-ratio: 540 / 240;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background-color: var(--scene-bg);
+  background-image: radial-gradient(var(--scene-dot) 1px, transparent 1.2px);
+  background-size: 14px 14px;
+
+  @variant dark {
+    --scene-bg: #141416;
+    --scene-dot: #26262b;
+    border-color: var(--line-strong);
+    & > canvas { filter: invert(0.9) hue-rotate(180deg); }
+  }
+}
+.prose stick-scene:focus-visible {
+  outline: 2px solid var(--yellow-deep);
+  outline-offset: 3px;
+}
+.prose figure.scene figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--fg-3);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/*
  * Live playgrounds (components/playground). Wider than the text column on
  * large screens, with the editor and preview side by side once there's room.
  * The highlighted code is the no-JS version; it hides once the editor mounts.
