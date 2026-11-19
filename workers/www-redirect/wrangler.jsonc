@@ -1,0 +1,17 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "thapa-sandesh-www-redirect",
+  "main": "index.ts",
+  "compatibility_date": "2026-10-01",
+  // A route, not a custom domain: it runs on the existing proxied www DNS
+  // record, so that record doesn't have to be deleted first.
+  "routes": [
+    {
+      "pattern": "www.thapa-sandesh.com.np/*",
+      "zone_name": "thapa-sandesh.com.np",
+    },
+  ],
+  // Only reachable through the route above.
+  "workers_dev": false,
+  "preview_urls": false,
+}

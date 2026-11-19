@@ -146,5 +146,12 @@ export function createFakeApi(getSettings: () => Settings, log: RequestLog) {
         0.3
       ),
     getPosts: () => request("getPosts()", () => LATEST_POSTS, 2),
+    // `key` is an idempotency key: shown in the log so readers can see
+    // every retry of one checkout carries the same one.
+    placeOrder: (amount: number, key?: string) =>
+      request(
+        key ? `placeOrder(${amount}, ${show(key)})` : `placeOrder(${amount})`,
+        () => ({ amount })
+      ),
   }
 }

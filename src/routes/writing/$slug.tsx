@@ -97,6 +97,9 @@ function Post() {
   )
 }
 
+const SCENE_FONT =
+  "https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap"
+
 // Loaded only on posts that contain a playground.
 const Playground = lazy(() => import("@/components/playground"))
 
@@ -148,6 +151,40 @@ function PostBody({ html }: { html: string }) {
       cancelled = true
       observer.disconnect()
       unmount?.()
+    }
+  }, [html])
+
+  // Stick-figure scenes (<stick-scene>) are small canvas widgets served from
+  // public/scenes. Load the runtime first, then each scene file a post names
+  // in data-src: dynamic scripts with async = false run in insertion order,
+  // and scene files read window.RIG as they load. Scripts stay loaded across
+  // client navigations, and new <stick-scene> elements upgrade on their own.
+  useEffect(() => {
+    const scenes = body.current?.querySelectorAll<HTMLElement>("stick-scene")
+    if (!scenes?.length) return
+    // The scenes letter in Balsamiq Sans. Text drawn on a canvas doesn't make
+    // the browser fetch a font, so ask for it once its stylesheet is in; the
+    // scenes redraw every frame and pick it up. The runtime sees this link
+    // and doesn't add its own.
+    if (!document.querySelector(`link[href="${SCENE_FONT}"]`)) {
+      const link = document.createElement("link")
+      link.rel = "stylesheet"
+      link.href = SCENE_FONT
+      link.addEventListener("load", () => {
+        document.fonts.load('400 10px "Balsamiq Sans"').catch(() => {})
+      })
+      document.head.append(link)
+    }
+    const sources = new Set(["/scenes/stick.js"])
+    scenes.forEach((scene) => {
+      if (scene.dataset.src) sources.add(scene.dataset.src)
+    })
+    for (const src of sources) {
+      if (document.querySelector(`script[src="${src}"]`)) continue
+      const script = document.createElement("script")
+      script.src = src
+      script.async = false
+      document.head.append(script)
     }
   }, [html])
 
