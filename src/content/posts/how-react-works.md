@@ -1,5 +1,5 @@
 ---
-title: "How React works behind the scenes"
+title: "How React works under the hood: render, commit and Fiber"
 description: "What happens between setState and the screen: elements, the trigger, render and commit steps, the Fiber tree, reconciliation and keys, where hooks live, batching and effects."
 date: "2026-11-18"
 tags: ["react", "javascript", "internals"]

@@ -87,6 +87,8 @@ function plainMarkdown(markdown: string) {
         (_, boxes: string) => compare(boxes)
       )
       .replace(/<span class="scrub"[^>]*><\/span>/g, "[adjustable value]")
+      // Margin notes ({>> … <<}) read as asides.
+      .replace(/\s*\{>>\s*([\s\S]+?)\s*<<\}/g, " (Side note: $1)")
       // Any other tag goes, its text stays. Autolinks like <https://…> don't
       // match, because a tag name can't be followed by ":".
       .replace(/<\/?[a-z][a-z0-9-]*(?:\s[^>]*)?\/?>/gi, "")

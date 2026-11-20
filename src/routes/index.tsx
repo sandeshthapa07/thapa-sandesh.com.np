@@ -1,4 +1,12 @@
-import { useSyncExternalStore } from "react"
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react"
+import { createPortal } from "react-dom"
 import { usePostHog } from "@posthog/react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { ArrowRight, ArrowUpRight, MapPin } from "lucide-react"
@@ -102,7 +110,8 @@ function Hero() {
   const links = site.socials.filter((social) => social.label !== "Email")
 
   return (
-    <section className="mx-auto grid max-w-[880px] grid-cols-1 gap-10 px-6 pt-8 pb-16 sm:px-8 sm:pt-16 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-16">
+    <section className="relative mx-auto grid max-w-[880px] grid-cols-1 gap-10 px-6 pt-8 pb-16 sm:px-8 sm:pt-16 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-16">
+      <HeroCharm />
       <div>
         <h1 className="text-4xl leading-[1.1] font-semibold tracking-tight sm:text-5xl">
           Hi, I&apos;m Sandesh.
@@ -182,6 +191,102 @@ function Hero() {
       </div>
       <Polaroid />
     </section>
+  )
+}
+
+// A nimbu mirchi (a lemon and green chillies on a thread) hangs from the top
+// of the home page, to keep the evil eye (nazar) away, as it does over shop
+// doors in Nepal. You can drag it, fling it or brush past it.
+//   - Phones and tablets: top right, beside the polaroid.
+//   - 80rem and up: in the margin, just right of the polaroid.
+//   - In between, the two-column hero has no free space, so it isn't shown.
+// It's drawn on a transparent full-screen canvas, so a swing or a fling is
+// never cut off. The canvas lets the pointer through to the page except over
+// the charm itself. The thread is tied to a marker in the hero, so the charm
+// scrolls with the page (and sways as it does).
+// three.js is big, so it loads once the page is idle, only on the client, and
+// stops drawing once the hero has scrolled away.
+const NimbuMirchi = lazy(() =>
+  import("@/components/nimbu-mirchi").then((module) => ({
+    default: module.NimbuMirchi,
+  }))
+)
+const CHARM_FITS = "(width < 64rem), (width >= 80rem)"
+const CHARM_WIDE = "(width >= 80rem)"
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)"
+// Pixels per world unit: the charm is ~4.5 units long, so ~145px on phones
+// and ~185px on wide screens, the size it had in its old box.
+const CHARM_UNIT = { narrow: 32, wide: 41 }
+// How far above the viewport the knot can go before the charm is out of
+// sight and drawing stops.
+const CHARM_REACH = 420
+
+function useMedia(query: string) {
+  return useSyncExternalStore(
+    (onChange) => {
+      const list = window.matchMedia(query)
+      list.addEventListener("change", onChange)
+      return () => list.removeEventListener("change", onChange)
+    },
+    () => window.matchMedia(query).matches,
+    () => false
+  )
+}
+
+function HeroCharm() {
+  const knot = useRef<HTMLDivElement>(null)
+  const [idle, setIdle] = useState(false)
+  const fits = useMedia(CHARM_FITS)
+  const wide = useMedia(CHARM_WIDE)
+  const still = useMedia(REDUCED_MOTION)
+
+  useEffect(() => {
+    const ready = () => setIdle(true)
+    // Safari has no requestIdleCallback yet; fall back to a short timeout.
+    const whenIdle = window.requestIdleCallback as
+      typeof window.requestIdleCallback | undefined
+    if (whenIdle) {
+      const id = whenIdle.call(window, ready, { timeout: 2500 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = window.setTimeout(ready, 1200)
+    return () => window.clearTimeout(id)
+  }, [])
+
+  // Where the knot is on screen, read every frame by the charm.
+  const knotAt = () => knot.current?.getBoundingClientRect()
+  const anchorX = () => knotAt()?.left ?? 0
+  const anchorY = () => knotAt()?.top ?? 0
+  const active = () => {
+    const top = knotAt()?.top
+    return top !== undefined && top > -CHARM_REACH && top < window.innerHeight
+  }
+
+  return (
+    <>
+      {/* The knot: a point at the top of the hero where the thread is tied. */}
+      <div
+        ref={knot}
+        aria-hidden="true"
+        className="absolute top-0 right-20 size-0 sm:right-24 xl:right-auto xl:left-full xl:ml-22"
+      />
+      {idle &&
+        fits &&
+        createPortal(
+          <Suspense fallback={null}>
+            <NimbuMirchi
+              className="fixed inset-0 z-30"
+              passThrough
+              unit={wide ? CHARM_UNIT.wide : CHARM_UNIT.narrow}
+              anchorX={anchorX}
+              anchorY={anchorY}
+              active={active}
+              breeze={!still}
+            />
+          </Suspense>,
+          document.body
+        )}
+    </>
   )
 }
 

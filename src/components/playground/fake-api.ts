@@ -24,7 +24,7 @@ export type LogEntry = {
 }
 
 const POSTS = [
-  "Async React: let React handle the waiting",
+  "Async React explained: transitions, Actions and Suspense",
   "Actions and useTransition",
   "Optimistic updates with useOptimistic",
   "Reading data with use and Suspense",
@@ -34,8 +34,8 @@ const POSTS = [
   "Race conditions in useEffect",
   "Error boundaries in practice",
   "Caching promises for Suspense",
-  "WebMCP: give AI agents tools, not screenshots",
-  "Choosing a frontend stack",
+  "What is WebMCP? Give AI agents tools, not screenshots",
+  "How to choose a frontend framework (before AI picks Next.js)",
 ].map((title) => ({
   slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
   title,
