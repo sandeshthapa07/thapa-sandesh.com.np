@@ -1,5 +1,5 @@
 ---
-title: "React Server Components: what they fix, and how we got here"
+title: "What are React Server Components, and what do they fix?"
 description: "What React Server Components are, the problems they solve (heavy bundles, request waterfalls, API glue), what they don't fix, and the road from renderToString to React 19."
 date: "2026-11-18"
 tags: ["react", "javascript", "performance", "architecture"]

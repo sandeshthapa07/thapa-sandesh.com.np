@@ -1,5 +1,5 @@
 ---
-title: "AI made \"it works\" cheap. Does anyone still care about the details?"
+title: "Do details still matter when AI writes the code?"
 description: "When AI can build a working app in an afternoon, do the small things still matter? Details people feel, AI products that worked but missed one, and why the answer is to craft the system that gets details right."
 date: "2026-11-18"
 tags: ["ai", "craft", "ux", "frontend"]

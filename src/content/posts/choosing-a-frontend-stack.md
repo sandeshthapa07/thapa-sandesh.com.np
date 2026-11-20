@@ -1,5 +1,5 @@
 ---
-title: "Before AI picks Next.js for you: choosing a frontend stack"
+title: "How to choose a frontend framework (before AI picks Next.js)"
 description: "Why AI assistants reach for Next.js by default, what to ask before choosing a framework, and which frameworks and libraries solve which problems."
 date: "2026-11-16"
 tags: ["react", "nextjs", "architecture", "ai"]

@@ -1,5 +1,5 @@
 ---
-title: "Async React: let React handle the waiting"
+title: "Async React explained: transitions, Actions and Suspense"
 description: "What Async React means, and how transitions, Actions, useOptimistic, Suspense and action props replace the loading-state code we write by hand."
 date: "2026-11-17"
 tags: ["react", "javascript", "performance"]
