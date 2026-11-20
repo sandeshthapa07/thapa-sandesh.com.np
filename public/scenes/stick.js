@@ -1097,7 +1097,8 @@
         }
         continue;
       }
-      v.step(dt);
+      // `speed` (site addition): 0.5 plays the scene at half speed.
+      v.step(dt * (v.speed || 1));
       v.draw();
       any = true;
     }
@@ -1198,6 +1199,14 @@
   }
 
   class StickScene extends HTMLElement {
+    static get observedAttributes() {
+      return ['speed'];
+    }
+    attributeChangedCallback(name, old, value) {
+      if (this.v) {
+        this.v.speed = Number(value) || 1;
+      }
+    }
     connectedCallback() {
       if (this.cv) {
         return;
@@ -1221,6 +1230,7 @@
         zoom: Number(this.getAttribute('zoom')) || 1,
       });
       this.v = v;
+      v.speed = Number(this.getAttribute('speed')) || 1;
       this.setAttribute('role', 'img');
       if (!this.hasAttribute('aria-label')) {
         this.setAttribute('aria-label', this.getAttribute('label') || v.def.label || id);
