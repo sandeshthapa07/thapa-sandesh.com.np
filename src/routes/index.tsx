@@ -12,13 +12,14 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import { ArrowRight, ArrowUpRight, MapPin } from "lucide-react"
 import { PostList } from "@/components/post-list"
 import { Band, SectionTitle } from "@/components/section"
-import { projects } from "@/content/projects"
-import type { Project } from "@/content/projects"
+import { projects, sideProjects } from "@/content/projects"
+import type { Project, SideProject } from "@/content/projects"
 import { site } from "@/content/site"
 import { toolkit } from "@/content/toolkit"
 import { posts } from "@/lib/posts"
 import { seo } from "@/lib/seo"
 import { homeSchema } from "@/lib/structured-data"
+import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/")({
   head: () =>
@@ -46,6 +47,24 @@ function Home() {
         <ul className="reveal grid grid-cols-1 gap-2.5 md:grid-cols-2">
           {projects.map((project) => (
             <ProjectCard key={project.title} project={project} />
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="side-projects-title">
+        <SectionTitle
+          id="side-projects-title"
+          kicker="Side projects"
+          title="Made on my own time"
+          subtitle="A letter app, and two open-source npm packages for apps built in Nepal"
+        />
+        <ul className="reveal grid grid-cols-1 gap-2.5 md:grid-cols-2">
+          {sideProjects.map((project, index) => (
+            <SideProjectCard
+              key={project.title}
+              project={project}
+              featured={index === 0}
+            />
           ))}
         </ul>
         <MoreLink href={site.github}>More on GitHub</MoreLink>
@@ -395,6 +414,124 @@ function ProjectCard({ project }: { project: Project }) {
           </li>
         ))}
       </ul>
+    </li>
+  )
+}
+
+// Secondary links on a side-project card sit above the card-wide link.
+const cardLink =
+  "relative z-10 inline-flex items-center gap-1 rounded-sm text-xs transition-colors outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+
+// A screenshot, what it is and why I made it. The first card (the side
+// project) spans both columns on wider screens, with its text beside the
+// screenshot; the packages sit side by side under it.
+function SideProjectCard({
+  project,
+  featured,
+}: {
+  project: SideProject
+  featured: boolean
+}) {
+  const posthog = usePostHog()
+  const domain = new URL(project.href).hostname
+  const track = (link: "site" | "source") => {
+    posthog.capture("project_visited", {
+      project: project.title,
+      project_type: project.kind,
+      link,
+    })
+    posthog.logger.info("side project link selected", {
+      project_type: project.kind,
+      link,
+    })
+  }
+
+  return (
+    <li
+      className={cn(
+        "group relative flex flex-col rounded-[18px] bg-panel p-2.5 transition-colors has-[a:hover]:bg-panel-2",
+        featured &&
+          "md:col-span-2 md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:items-center md:gap-3"
+      )}
+    >
+      <div className="overflow-hidden rounded-xl bg-white ring-1 ring-line">
+        <img
+          src={project.image.src}
+          alt={project.image.alt}
+          width={1360}
+          height={850}
+          loading="lazy"
+          decoding="async"
+          className="aspect-16/10 w-full object-cover transition-transform duration-700 ease-out-quint group-has-[a:hover]:scale-[1.015] motion-reduce:transition-none"
+        />
+      </div>
+      <div className="flex flex-1 flex-col px-4 pt-5 pb-4 sm:px-5 sm:pb-5">
+        <div className="flex items-center justify-between gap-4">
+          <span className="rounded-full border border-yellow-text/40 px-2 py-px font-mono text-[10px] tracking-[0.08em] text-yellow-text uppercase">
+            {project.kind}
+          </span>
+          <span className="flex items-center gap-1 font-mono text-xs text-fg-3">
+            {domain}
+            <ArrowUpRight className="size-3.5" />
+          </span>
+        </div>
+        <h3 className="mt-4 text-[15px] font-medium wrap-break-word">
+          <a
+            href={project.href}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => track("site")}
+            className="outline-none after:absolute after:inset-0 after:rounded-[18px] focus-visible:after:ring-2 focus-visible:after:ring-ring"
+          >
+            {project.title}
+          </a>
+        </h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-fg-2">
+          {project.summary}
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-fg-3">
+          <strong className="font-medium text-foreground">
+            Why I made it.
+          </strong>{" "}
+          {project.why}
+        </p>
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
+          <ul className="flex flex-wrap gap-1.5">
+            {project.tags.map((tag) => (
+              <li
+                key={tag}
+                className="rounded-full bg-panel-2 px-2.5 py-0.5 font-mono text-[11px] text-fg-2"
+              >
+                {tag}
+              </li>
+            ))}
+          </ul>
+          {(project.post || project.source) && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              {project.post && (
+                <Link
+                  to="/writing/$slug"
+                  params={{ slug: project.post }}
+                  className={`${cardLink} font-medium text-foreground`}
+                >
+                  How I built it <ArrowRight className="size-3.5" />
+                </Link>
+              )}
+              {project.source && (
+                <a
+                  href={project.source}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => track("source")}
+                  className={`${cardLink} text-fg-3`}
+                >
+                  Source on GitHub <ArrowUpRight className="size-3.5" />
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </li>
   )
 }

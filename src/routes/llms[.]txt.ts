@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { projects } from "@/content/projects"
+import { projects, sideProjects } from "@/content/projects"
 import { site } from "@/content/site"
 import { posts } from "@/lib/posts"
 import { absoluteUrl } from "@/lib/seo"
@@ -32,6 +32,13 @@ function llmsTxt() {
       `- ${link(project.title, project.href)}: ${project.description}`
   )
 
+  const sideWork = sideProjects.map((project) => {
+    const source = project.source
+      ? ` Source: ${link("GitHub", project.source)}.`
+      : ""
+    return `- ${link(project.title, project.href)} (${project.kind}): ${project.summary} ${project.why}${source}`
+  })
+
   const contact = site.socials.map(
     (social) => `- ${link(social.label, social.href)}`
   )
@@ -43,11 +50,12 @@ function llmsTxt() {
       `Personal site of ${site.name}, ${site.role.toLowerCase()} at ${link(site.company, site.companyUrl)}, based in ${site.location}: articles from day-to-day frontend work, and the products built along the way. Every page is prerendered HTML, so the links below can be read without running JavaScript.`,
       `## Writing\n\n${writing.join("\n")}`,
       `## Projects\n\n${work.join("\n")}`,
+      `## Side projects and packages\n\n${sideWork.join("\n")}`,
       `## Contact\n\n${contact.join("\n")}`,
       [
         "## Optional",
         "",
-        `- ${link("Home", absoluteUrl("/"))}: About, projects and toolkit.`,
+        `- ${link("Home", absoluteUrl("/"))}: About, projects, side projects and toolkit.`,
         `- ${link("All writing", absoluteUrl("/writing"))}: Every article, newest first.`,
         `- ${link("Full text", absoluteUrl("/llms-full.txt"))}: Every article in full, in one Markdown file.`,
         `- ${link("Sitemap", absoluteUrl("/sitemap.xml"))}: Every page, with the date it last changed.`,

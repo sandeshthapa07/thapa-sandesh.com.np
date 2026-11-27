@@ -838,6 +838,14 @@
   }
 }
 @keyframes pg-appear { from { opacity: 0; } }
+
+/* shadcn/ui components in an example (they all carry data-slot) keep their
+   own look. The neutral look above and the .prose styles are unlayered, so
+   they'd beat Tailwind's layered utilities; revert-layer hands every property
+   back to Tailwind for these elements. */
+.prose .pg-preview :is([data-slot], [data-slot] *) { all: revert-layer; }
+/* …except the gap above one placed straight in the preview. */
+.prose .pg-preview > * + [data-slot] { margin-top: 0.75rem; }
 @keyframes pg-spin { to { rotate: 1turn; } }
 
 .prose .pg-error {
