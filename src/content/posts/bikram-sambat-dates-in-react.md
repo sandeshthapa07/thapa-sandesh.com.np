@@ -19,6 +19,13 @@ This post covers what makes BS dates hard, what the data comparison showed,
 how my converter works, and how to use BS dates in React without the usual
 bugs.
 
+**Looking for a package to install?** The converter in this post,
+`bikramsambat`, is the one I wrote first, and it isn't on npm. I've since
+published [nepali-day-picker](/writing/nepali-date-picker-shadcn-ui), a
+separate library for the same problems. It keeps your dates as plain
+`Date`s, builds its data from five tables instead of three, and turns
+shadcn/ui's Calendar into a BS calendar.
+
 ## The short version
 
 - **BS month lengths can't be calculated.** They're published year by year,
