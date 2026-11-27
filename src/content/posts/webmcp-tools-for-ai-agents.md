@@ -1,5 +1,5 @@
 ---
-title: "WebMCP: give AI agents tools, not screenshots"
+title: "What is WebMCP? Give AI agents tools, not screenshots"
 description: "The problem WebMCP solves, where it helps, why SEOs care about it, and how to add tools with document.modelContext or plain HTML forms."
 date: "2026-11-16"
 tags: ["webmcp", "ai", "seo", "javascript"]

@@ -4,6 +4,7 @@ import { Link, createFileRoute, notFound } from "@tanstack/react-router"
 import { ArrowLeft } from "lucide-react"
 import type { PlaygroundProps } from "@/components/playground"
 import { site } from "@/content/site"
+import { drawMarginNotes } from "@/lib/margin-notes"
 import { formatDate, loadPost } from "@/lib/posts"
 import { pageTitle, seo } from "@/lib/seo"
 import { postSchema } from "@/lib/structured-data"
@@ -14,18 +15,36 @@ export const Route = createFileRoute("/writing/$slug")({
     if (!post) throw notFound()
     return post
   },
-  head: ({ loaderData: post }) =>
-    post
-      ? seo({
-          title: pageTitle(post.title),
-          description: post.description,
-          path: `/writing/${post.slug}`,
-          article: { publishedTime: post.date, modifiedTime: post.updated },
-          jsonLd: postSchema(post),
-        })
-      : {},
+  head: ({ loaderData: post }) => {
+    if (!post) return {}
+    const head = seo({
+      title: pageTitle(post.title),
+      description: post.description,
+      path: `/writing/${post.slug}`,
+      article: { publishedTime: post.date, modifiedTime: post.updated },
+      jsonLd: postSchema(post),
+    })
+    // Margin notes are handwritten. The font loads only on posts that use
+    // them, from the page head so it arrives with the first paint.
+    if (!post.html.includes('class="margin-note"')) return head
+    return {
+      ...head,
+      links: [
+        ...head.links,
+        {
+          rel: "preconnect",
+          href: "https://fonts.gstatic.com",
+          crossOrigin: "anonymous" as const,
+        },
+        { rel: "stylesheet", href: HAND_FONT },
+      ],
+    }
+  },
   component: Post,
 })
+
+const HAND_FONT =
+  "https://fonts.googleapis.com/css2?family=Caveat:wght@400..600&display=swap"
 
 function Post() {
   const post = Route.useLoaderData()
@@ -97,6 +116,32 @@ function Post() {
   )
 }
 
+// A 1x / 0.5x switch in the corner of a scene. It sits beside the
+// <stick-scene>, not inside it, so pressing it doesn't count as a click on
+// the scene. Choosing a speed plays the scene again at that speed.
+function speedToggle(scene: HTMLElement) {
+  const group = document.createElement("div")
+  group.className = "scene-speed"
+  group.setAttribute("role", "group")
+  group.setAttribute("aria-label", "Animation speed")
+  const buttons = ["1", "0.5"].map((speed) => {
+    const button = document.createElement("button")
+    button.type = "button"
+    button.textContent = `${speed}x`
+    button.setAttribute("aria-pressed", String(speed === "1"))
+    button.addEventListener("click", () => {
+      for (const other of buttons) {
+        other.setAttribute("aria-pressed", String(other === button))
+      }
+      scene.setAttribute("speed", speed)
+      scene.click()
+    })
+    return button
+  })
+  group.append(...buttons)
+  return group
+}
+
 const SCENE_FONT =
   "https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap"
 
@@ -154,6 +199,11 @@ function PostBody({ html }: { html: string }) {
     }
   }, [html])
 
+  // Margin notes get a hand-drawn bracket that draws itself on scroll.
+  useEffect(() => {
+    if (body.current) return drawMarginNotes(body.current)
+  }, [html])
+
   // Stick-figure scenes (<stick-scene>) are small canvas widgets served from
   // public/scenes. Load the runtime first, then each scene file a post names
   // in data-src: dynamic scripts with async = false run in insertion order,
@@ -178,6 +228,10 @@ function PostBody({ html }: { html: string }) {
     const sources = new Set(["/scenes/stick.js"])
     scenes.forEach((scene) => {
       if (scene.dataset.src) sources.add(scene.dataset.src)
+      const figure = scene.closest("figure.scene")
+      if (figure && !figure.querySelector(".scene-speed")) {
+        figure.append(speedToggle(scene))
+      }
     })
     for (const src of sources) {
       if (document.querySelector(`script[src="${src}"]`)) continue

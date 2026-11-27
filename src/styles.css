@@ -229,8 +229,27 @@
   letter-spacing: -0.01em;
   scroll-margin-top: 2rem;
 }
-.prose h2 { margin-top: 2.5em; font-size: 1.375rem; line-height: 1.3; }
-.prose h3 { margin-top: 2em; font-size: 1.125rem; line-height: 1.4; }
+/* Quiet section headings: body-sized and bold, with a hairline running to
+   the edge of the column. The markdown plugin wraps the text in a span, so
+   inline code in a heading stays part of one line of text. */
+.prose h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-top: 3em;
+  font-size: 1.0625rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+.prose h2 > span { text-wrap: balance; }
+.prose h2::after {
+  content: "";
+  flex: 1 1 2.5rem;
+  min-inline-size: 2.5rem;
+  block-size: 1px;
+  background: var(--line);
+}
+.prose h3 { margin-top: 2.25em; font-size: 1rem; line-height: 1.5; }
 .prose h2 + *,
 .prose h3 + * { margin-top: 0.75em; }
 .prose strong { color: var(--foreground); font-weight: 600; }
@@ -312,6 +331,29 @@
 }
 .prose .compare .dont .label::before { content: "✕ Don't"; color: #ef4444; }
 .prose .compare .do .label::before { content: "✓ Do"; color: #10b981; }
+/* Tables stay short in posts, so long cells wrap instead of the table
+   scrolling sideways, which keeps table semantics for screen readers. */
+.prose table {
+  width: 100%;
+  margin-block: 1.75em;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.prose th,
+.prose td {
+  padding: 0.6rem 1rem 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.prose th {
+  color: var(--foreground);
+  font-weight: 600;
+  border-bottom-color: var(--line-strong);
+}
+.prose :is(th, td):last-child { padding-right: 0; }
 .prose .video {
   margin-block: 1.75em;
   aspect-ratio: 16 / 9;
@@ -328,7 +370,179 @@
  * scenes' 540 × 240 shape so nothing shifts when the canvas mounts. In dark
  * mode only the canvas is inverted: ink turns light, colours keep their hue.
  */
-.prose figure.scene { margin-block: 1.75em; }
+/* Text for screen readers only. */
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Margin notes ({>> … <<} in a post): handwritten asides. On narrow screens
+   a bracket runs under the paragraph and the note sits centred below it.
+   Once the page has a margin, a "]" closes off the paragraph and the note
+   sits beside it. lib/margin-notes.ts draws the hand-drawn bracket; the
+   plain CSS one below is for when that script hasn't run. */
+.prose .margin-note {
+  position: relative;
+  display: block;
+  margin-top: 0.75rem;
+  padding-block-start: 1.375rem;
+  font-family: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  font-size: 1.3125rem;
+  font-size-adjust: from-font;
+  line-height: 1.1;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--fg-2);
+}
+.prose .margin-note:not(.has-bracket)::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 2px;
+  block-size: 0.5rem;
+  border: 1.5px solid var(--line-strong);
+  border-block-start: 0;
+  border-radius: 0 0 3px 3px;
+}
+.margin-note-text { display: block; }
+.margin-note-bracket {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.margin-note-bracket path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-opacity: 0.75;
+  /* pathLength="1": the dash covers the whole stroke, so moving the offset
+     from 1 to 0 draws the line from end to end. */
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.margin-note[data-bracket="drawn"] .margin-note-bracket path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.65s cubic-bezier(0.3, 0.6, 0.35, 1);
+}
+.margin-note[data-bracket="drawn"] .margin-note-bracket path + path {
+  transition-delay: 0.12s;
+}
+/* Once the bracket is mostly drawn, the note writes itself out: each letter
+   inks in, from a slight blur and offset, ~30ms after the one before. The
+   script sets --delay per letter. Words stay whole across line breaks. */
+.margin-note-word { white-space: nowrap; }
+.margin-note-letter { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) {
+  .margin-note-letter { opacity: 0; }
+  .margin-note[data-bracket="drawn"] .margin-note-letter {
+    animation: note-ink 0.38s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    animation-delay: calc(var(--delay, 0ms) + 0.3s);
+  }
+}
+@keyframes note-ink {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(0.14em) rotate(-4deg);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .margin-note-bracket path { stroke-dashoffset: 0; }
+}
+@media (width >= 75rem) {
+  .prose :is(p, li):has(> .margin-note) { position: relative; }
+  .prose .margin-note {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: calc(100% + 1.5rem);
+    display: flex;
+    align-items: center;
+    inline-size: 13.25rem;
+    min-block-size: 100%;
+    margin: 0;
+    padding: 0 0 0 1.5rem;
+    text-align: start;
+    rotate: -1deg;
+  }
+  .prose .margin-note:not(.has-bracket)::before {
+    inset-block: 0.2em;
+    inset-inline: 0 auto;
+    inline-size: 0.375rem;
+    block-size: auto;
+    border: 1.5px solid var(--line-strong);
+    border-inline-start: 0;
+    border-radius: 0 3px 3px 0;
+  }
+}
+
+/* Footnotes ([^id] in a post): a small number in the text, and the notes
+   listed at the end of the post. Raised with position, not vertical-align,
+   so the number doesn't push its line apart. */
+.prose .fn-ref {
+  position: relative;
+  inset-block-start: -0.55em;
+  padding-inline-start: 0.15em;
+  font-size: 0.65em;
+  line-height: 1;
+  vertical-align: baseline;
+}
+.prose .fn-ref a {
+  color: var(--fg-3);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+.prose .fn-ref a:hover { color: var(--foreground); }
+.prose :is(.fn-ref a, .footnotes li) { scroll-margin-top: 2rem; }
+.prose .footnotes { margin-top: 3.5em; font-size: 0.875rem; color: var(--fg-3); }
+.prose .footnotes li:target { color: var(--foreground); }
+.prose .fn-back { text-decoration: none; }
+
+.prose figure.scene { position: relative; margin-block: 1.75em; }
+/* 1x / 0.5x playback toggle, added to each scene by the post page. */
+.scene-speed {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline-end: 0.5rem;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--background);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+.scene-speed button {
+  min-inline-size: 1.75rem;
+  min-block-size: 1.5rem;
+  padding-inline: 0.45rem;
+  border-radius: 999px;
+  color: var(--fg-3);
+}
+.scene-speed button[aria-pressed="true"] {
+  background: var(--panel);
+  color: var(--foreground);
+}
+.scene-speed button:focus-visible {
+  outline: 2px solid var(--yellow-deep);
+  outline-offset: 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Scenes show a still frame there, so speed means nothing. */
+  .scene-speed { display: none; }
+}
 .prose stick-scene {
   --scene-bg: #ffffff;
   --scene-dot: #e6e6e6;
