@@ -7,3 +7,6 @@ allowBuilds:
   core-js: false
   msw: false
   workerd: true
+
+minimumReleaseAgeExclude:
+  - nepali-day-picker@0.3.0

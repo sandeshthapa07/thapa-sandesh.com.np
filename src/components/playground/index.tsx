@@ -67,7 +67,10 @@ function bindImport(clause: string, source: string) {
   return bindings.join(" ")
 }
 
-function createModules(api: ReturnType<typeof createFakeApi>) {
+function createModules(
+  api: ReturnType<typeof createFakeApi>,
+  kit: RefObject<Record<string, object>>
+) {
   const modules: Record<string, object> = {
     react: React,
     "react-dom": ReactDOM,
@@ -76,10 +79,39 @@ function createModules(api: ReturnType<typeof createFakeApi>) {
   }
   return (source: string) => {
     if (source in modules) return modules[source]
+    if (source in kit.current) return kit.current[source]
+    const names = [...Object.keys(modules), ...Object.keys(kit.current)]
     throw new Error(
-      `The playground can't import "${source}". Try "react", "react-dom", "react-error-boundary" or "./api".`
+      `The playground can't import "${source}". Try ${names.map((name) => `"${name}"`).join(", ")}.`
     )
   }
+}
+
+// nepali-day-picker and the shadcn/ui components are a separate chunk
+// (nepali-kit.ts), loaded only for examples that import them.
+const KIT_SOURCE = /from\s*["'](?:nepali-day-picker|@\/components\/ui\/)/
+
+function useKit(code: string) {
+  const kit = useRef<Record<string, object>>({})
+  const [ready, setReady] = useState(() => !KIT_SOURCE.test(code))
+
+  useEffect(() => {
+    if (ready) return
+    let cancelled = false
+    import("./nepali-kit")
+      .then(({ modules }) => {
+        kit.current = modules
+        if (!cancelled) setReady(true)
+      })
+      .catch((error: unknown) => {
+        console.error("Couldn't load the playground's calendar modules", error)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [ready])
+
+  return { kit, ready }
 }
 
 type Theme = NonNullable<ComponentProps<typeof Editor>["theme"]>
@@ -118,11 +150,20 @@ const theme: Theme = {
 // don't know focusgroup yet.
 const focusgroup: Record<string, string> = { focusgroup: "toolbar wrap" }
 
-export default function Playground({
+export default function Playground(props: PlaygroundProps) {
+  const { kit, ready } = useKit(props.code)
+  // Until the modules it imports have loaded, the static code stays on the
+  // page (styles.css hides it once .pg mounts).
+  if (!ready) return null
+  return <LivePlayground {...props} kit={kit} />
+}
+
+function LivePlayground({
   code: initialCode,
   title,
   network: initialNetwork,
-}: PlaygroundProps) {
+  kit,
+}: PlaygroundProps & { kit: RefObject<Record<string, object>> }) {
   const id = useId()
   const hasNetwork = usesNetwork(initialNetwork)
   const [network, setNetwork] = useState(() => toNetwork(initialNetwork))
@@ -131,7 +172,7 @@ export default function Playground({
   const [{ log, scope }] = useState(() => {
     const requestLog = createRequestLog()
     const api = createFakeApi(() => settings.current, requestLog)
-    return { log: requestLog, scope: { __module: createModules(api) } }
+    return { log: requestLog, scope: { __module: createModules(api, kit) } }
   })
 
   // The editor's text, and the text the preview runs. The preview waits for

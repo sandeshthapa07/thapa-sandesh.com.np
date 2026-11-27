@@ -21,6 +21,7 @@ const LANGS = [
   "css",
   "html",
   "bash",
+  "diff",
   "dockerfile",
   "md",
 ]
